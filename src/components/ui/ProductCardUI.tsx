@@ -2,6 +2,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom"
 import { HeadlessProductCard } from "@/components/headless/HeadlessProductCard"
+import { motion } from "framer-motion"
+import { Heart, ShoppingBag } from "lucide-react"
 import type { Product } from "@/lib/supabase"
 
 /**
@@ -9,13 +11,6 @@ import type { Product } from "@/lib/supabase"
  * 
  * Este componente solo maneja la presentación del ProductCard.
  * Toda la lógica viene del HeadlessProductCard.
- * 
- * PUEDES MODIFICAR LIBREMENTE:
- * - Colores, temas, estilos
- * - Textos e idioma
- * - Layout y estructura visual
- * - Animaciones y efectos
- * - Agregar features visuales (hover effects, etc.)
  */
 
 interface ProductCardUIProps {
@@ -26,130 +21,155 @@ export const ProductCardUI = ({ product }: ProductCardUIProps) => {
   return (
     <HeadlessProductCard product={product}>
       {(logic) => (
-        <Card className="bg-white border border-gray-200">
-          <CardContent className="p-4">
+        <Card className="card-hover border-0 shadow-lg overflow-hidden rounded-2xl bg-white">
+          <CardContent className="p-0">
             <Link to={`/products/${logic.product.slug}`} className="block">
-              <div className="aspect-square bg-gray-100 rounded-md mb-3 overflow-hidden relative">
+              <div className="aspect-square bg-gradient-to-br from-accent/20 to-muted rounded-t-2xl overflow-hidden relative group">
                 {(logic.matchingVariant?.image || (logic.product.images && logic.product.images.length > 0)) ? (
-                  <img
+                  <motion.img
                     src={(logic.matchingVariant?.image as any) || logic.product.images![0]}
                     alt={logic.product.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    whileHover={{ scale: 1.05 }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-400">
-                    No image
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                    Sin imagen
                   </div>
                 )}
 
                 {/* Badges */}
-                <div className="absolute top-2 left-2 flex flex-col gap-1">
+                <div className="absolute top-3 left-3 flex flex-col gap-2">
                   {logic.discountPercentage && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded font-medium">
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="bg-primary text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg"
+                    >
                       -{logic.discountPercentage}%
-                    </span>
+                    </motion.span>
                   )}
                   {logic.product.featured && (
-                    <span className="bg-orange-500 text-white text-xs px-2 py-1 rounded font-medium">
-                      Featured
-                    </span>
+                    <motion.span 
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="bg-secondary text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg"
+                    >
+                      ⭐ Destacado
+                    </motion.span>
                   )}
                   {!logic.inStock && (
-                    <span className="bg-gray-600 text-white text-xs px-2 py-1 rounded font-medium">
-                      Out of stock
+                    <span className="bg-gray-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg">
+                      Agotado
                     </span>
                   )}
                 </div>
-              </div>
 
-              <h3 className="text-black font-medium text-sm mb-1 line-clamp-2">
-                {logic.product.title}
-              </h3>
-              {logic.product.description && (
-                <p className="text-gray-600 text-xs mb-3 line-clamp-2">
-                  {logic.product.description.replace(/<[^>]*>/g, '')}
-                </p>
-              )}
+                {/* Favorite button */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Heart className="h-4 w-4 text-primary" />
+                </motion.button>
+              </div>
             </Link>
 
-            {logic.hasVariants && logic.options && (
-              <div className="mb-3 space-y-2">
-                {logic.options.map((opt) => (
-                  <div key={opt.id}>
-                    <div className="text-xs font-medium text-black mb-1">{opt.name}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {opt.values.filter(val => logic.isOptionValueAvailable(opt.name, val)).map((val) => {
-                        const isSelected = logic.selected[opt.name] === val
-                        const swatch = opt.name.toLowerCase() === 'color' ? opt.swatches?.[val] : undefined
+            <div className="p-5">
+              <Link to={`/products/${logic.product.slug}`}>
+                <h3 className="font-bold text-lg mb-2 line-clamp-2 text-foreground hover:text-primary transition-colors">
+                  {logic.product.title}
+                </h3>
+                {logic.product.description && (
+                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                    {logic.product.description.replace(/<[^>]*>/g, '')}
+                  </p>
+                )}
+              </Link>
 
-                        if (swatch) {
+              {logic.hasVariants && logic.options && (
+                <div className="mb-4 space-y-3">
+                  {logic.options.map((opt) => (
+                    <div key={opt.id}>
+                      <div className="text-xs font-semibold text-foreground mb-2">{opt.name}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {opt.values.filter(val => logic.isOptionValueAvailable(opt.name, val)).map((val) => {
+                          const isSelected = logic.selected[opt.name] === val
+                          const swatch = opt.name.toLowerCase() === 'color' ? opt.swatches?.[val] : undefined
+
+                          if (swatch) {
+                            return (
+                              <motion.button
+                                key={val}
+                                type="button"
+                                onClick={() => logic.handleOptionChange(opt.name, val)}
+                                title={`${opt.name}: ${val}`}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                className={`h-8 w-8 rounded-full border-2 ${
+                                  isSelected ? 'border-primary ring-2 ring-primary/30' : 'border-border'
+                                } ${logic.selected[opt.name] && !isSelected ? 'opacity-40' : ''}`}
+                                style={{ backgroundColor: swatch }}
+                                aria-label={`${opt.name}: ${val}`}
+                              />
+                            )
+                          }
+
                           return (
-                            <button
+                            <motion.button
                               key={val}
                               type="button"
                               onClick={() => logic.handleOptionChange(opt.name, val)}
-                              title={`${opt.name}: ${val}`}
-                              className={`h-6 w-6 rounded-full border ${
-                                logic.selected[opt.name] && !isSelected ? 'opacity-40' : ''
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              className={`border-2 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                                isSelected 
+                                  ? 'border-primary bg-primary text-white shadow-md' 
+                                  : logic.selected[opt.name] && !isSelected
+                                    ? 'border-border bg-background text-muted-foreground opacity-40'
+                                    : 'border-border bg-background text-foreground hover:border-primary'
                               }`}
-                              style={{ 
-                                backgroundColor: swatch, 
-                                borderColor: '#e5e7eb'
-                              }}
+                              aria-pressed={isSelected}
                               aria-label={`${opt.name}: ${val}`}
-                            />
+                              title={`${opt.name}: ${val}`}
+                            >
+                              {val}
+                            </motion.button>
                           )
-                        }
-
-                        return (
-                          <button
-                            key={val}
-                            type="button"
-                            onClick={() => logic.handleOptionChange(opt.name, val)}
-                            className={`border rounded px-2 py-1 text-xs font-medium ${
-                              isSelected 
-                                ? 'border-black bg-black text-white' 
-                                : logic.selected[opt.name] && !isSelected
-                                  ? 'border-gray-300 bg-white text-gray-700 opacity-40'
-                                  : 'border-gray-300 bg-white text-gray-700'
-                            }`}
-                            aria-pressed={isSelected}
-                            aria-label={`${opt.name}: ${val}`}
-                            title={`${opt.name}: ${val}`}
-                          >
-                            {val}
-                          </button>
-                        )
-                      })}
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-black font-semibold">
-                  {logic.formatMoney(logic.currentPrice)}
-                </span>
-                {logic.currentCompareAt && logic.currentCompareAt > logic.currentPrice && (
-                  <span className="text-gray-400 text-xs line-through">
-                    {logic.formatMoney(logic.currentCompareAt)}
+              <div className="flex items-center justify-between border-t pt-4">
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-foreground">
+                    ${logic.currentPrice}
                   </span>
-                )}
+                  {logic.currentCompareAt && logic.currentCompareAt > logic.currentPrice && (
+                    <span className="text-muted-foreground text-sm line-through">
+                      ${logic.currentCompareAt}
+                    </span>
+                  )}
+                </div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    size="lg"
+                    onClick={() => {
+                      logic.onAddToCartSuccess()
+                      logic.handleAddToCart()
+                    }}
+                    disabled={!logic.canAddToCart}
+                    className="btn-primary rounded-full px-6 gap-2"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    {logic.inStock ? 'Agregar' : 'Agotado'}
+                  </Button>
+                </motion.div>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  logic.onAddToCartSuccess() // Hook para features adicionales
-                  logic.handleAddToCart()
-                }}
-                disabled={!logic.canAddToCart}
-                className="text-black border-black hover:bg-black hover:text-white disabled:opacity-50"
-              >
-                {logic.inStock ? 'Add' : 'Out of stock'}
-              </Button>
             </div>
           </CardContent>
         </Card>
