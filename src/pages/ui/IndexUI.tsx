@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/ProductCard';
 import { CollectionCard } from '@/components/CollectionCard';
 import { FloatingCart } from '@/components/FloatingCart';
-import { NewsletterSection } from '@/components/NewsletterSection';
+import { NewsletterBanner } from '@/components/NewsletterBanner';
 import { EcommerceTemplate } from '@/templates/EcommerceTemplate';
 import { HeroSection } from '@/components/HeroSection';
 import { PromoSection } from '@/components/PromoSection';
@@ -153,7 +153,7 @@ export const IndexUI = ({ logic }: IndexUIProps) => {
       </section>
 
       {/* Newsletter Section */}
-      <NewsletterSection />
+      <NewsletterBanner />
 
       <FloatingCart />
     </EcommerceTemplate>
